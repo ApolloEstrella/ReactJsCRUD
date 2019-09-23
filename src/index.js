@@ -144,7 +144,6 @@ class RestController extends React.Component {
 					}
 				}))
 
-
 			} else {
 				alert('Something happened wrong');
 			}
