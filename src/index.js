@@ -12,14 +12,14 @@ class RestController extends React.Component {
 						//id: 0,
 						//firstName: '',
 						//lastName: '',
+						isButtonLabelSubmit: true,
 						firstNameError: '',
 						authors: [],
 						newId: 0,
-						author: {"id": 0, "firstName": "", "lastName": ""},
-						isSubmitLabel: true
+						author: {"id": 0, "firstName": "", "lastName": ""}						
 					 };
 		//this.state = {authors: []};	
-		 				
+		this.handleChangeId = this.handleChangeId.bind(this); 				
 		this.handleChangeFirstName = this.handleChangeFirstName.bind(this); 
 		this.handleChangeLastName = this.handleChangeLastName.bind(this);
 		this.handleSubmit = this.handleSubmit.bind(this);
@@ -81,10 +81,14 @@ class RestController extends React.Component {
 
 		//this.setState({newId: this.state.newId - 1})
 
+
+		//console.log(this.state.isButtonLabelSubmit);
+
+		if (this.state.isButtonLabelSubmit) {
 		this.setNewId();
+		const author = {'id': this.state.newId, 'firstName': this.state.author.firstName, 'lastName': this.state.author.lastName};
 
-
-		fetch("https://localhost:44354/api/values", {method: 'POST', headers:{'Content-Type': 'application/json'}, body: JSON.stringify({id: this.state.newId, firstName: this.state.author.firstName, lastName: this.state.author.lastName})})		
+		fetch("https://localhost:44354/api/values", {method: 'POST', headers:{'Content-Type': 'application/json'}, body: JSON.stringify(author)})		
 		.then(response => {
 			console.log(response)
 			if (response.status >= 200 && response.status < 300) {
@@ -109,6 +113,48 @@ class RestController extends React.Component {
 		})
 		.catch(err => err)
 	}
+	else {
+		this.setState({isButtonLabelSubmit: true});
+
+
+
+		const author = {'id': this.state.author.id, 'firstName': this.state.author.firstName, 'lastName': this.state.author.lastName};
+		
+		fetch("https://localhost:44354/api/values/" + author.id, {method: 'PUT', headers:{'Content-Type': 'application/json'}, body: JSON.stringify(author)})		
+		.then(response => {
+			console.log(response)
+			if (response.status >= 200 && response.status < 300) {
+
+				var data = [...this.state.authors];
+				var index = data.findIndex(obj => obj.id === this.state.author.id);
+				data[index].firstName = this.state.author.firstName;
+				data[index].lastName = this.state.author.lastName;
+				this.setState({data}); 
+				this.setState(prevState => ({
+					author: {                   // object that we want to update
+							...prevState.author,    // keep all other key-value pairs
+							firstName: ""       // update the value of specific key
+					}
+				}))
+		
+				this.setState(prevState => ({
+					author: {
+							...prevState.author,
+							lastName: ""
+					}
+				}))
+
+
+			} else {
+				alert('Something happened wrong');
+			}
+		})
+		.catch(err => err)
+
+
+	}
+
+	}
 
 	handleSubmitOld(e) {
 		e.preventDefault();
@@ -132,6 +178,50 @@ class RestController extends React.Component {
 	}
 
 	handleUpdate(author) {
+
+		this.setState({isButtonLabelSubmit: false}, () => {console.log(this.state.isButtonLabelSubmit)});
+		//console.log(this.state.isButtonLabelSubmit)
+
+		//this.setState({isButtonLabelSubmit: false}, () => {
+		//	console.log('working');
+		//  });
+
+
+		//this.setState({ isButtonLabelSubmit: false }, () => {
+		//	console.log(this.state.isButtonLabelSubmit, 'isButtonLabelSubmit');
+		//  });
+
+		this.setState(prevState => ({
+			author: {                   // object that we want to update
+					...prevState.author,    // keep all other key-value pairs
+					id: author.id       // update the value of specific key
+			}
+		}))
+
+
+		this.setState(prevState => ({
+			author: {                   // object that we want to update
+					...prevState.author,    // keep all other key-value pairs
+					firstName: author.firstName       // update the value of specific key
+			}
+		}))
+
+	this.setState(prevState => ({
+		author: {                   // object that we want to update
+				...prevState.author,    // keep all other key-value pairs
+				lastName: author.lastName      // update the value of specific key
+		}
+}))
+
+
+	/*	if ({...this.state.isButtonLabelSubmit}) {
+			console.log('Submit');
+		}
+		else
+			console.log('Update'); */
+
+		return;
+
 		var x = JSON.stringify(author);                          
 		fetch("https://localhost:44354/api/values/" + author.id, {method: 'PUT', headers:{'Content-Type': 'application/json'}, body: JSON.stringify(author)})		
 		.then(response => {
@@ -140,6 +230,13 @@ class RestController extends React.Component {
 
 				//this.setState({...this.state.author.firstName:});
 
+				
+				this.setState(prevState => ({
+					author: {                   // object that we want to update
+							...prevState.author,    // keep all other key-value pairs
+							id: author.id       // update the value of specific key
+					}
+			}))
 
 				this.setState(prevState => ({
 					author: {                   // object that we want to update
@@ -178,7 +275,9 @@ class RestController extends React.Component {
 		.catch(err => err)
 	}
  
+	handleChangeId(){
 
+	}
 
 	handleDelete(e) {
 		//alert('del');
@@ -256,7 +355,9 @@ class RestController extends React.Component {
 					 
 				 //}
 
+				// this.getElementById("").display = "none";
 
+				// this.document.getElementById("authorId").display = "none";
 				 this.setState({authors: result});
 				 
 
@@ -280,7 +381,9 @@ class RestController extends React.Component {
 		return (
 			<div>
 
-	<form onSubmit={this.handleSubmit}>				
+	<form onSubmit={this.handleSubmit}>	
+		<input type="hidden" id="authorId" value={this.state.author.id} onChange={this.handleChangeId}  />
+		 		
    <label>
 		 First Name:
   	<input name="firstName" value={this.state.author.firstName} onChange={this.handleChangeFirstName}></input>
@@ -291,7 +394,7 @@ class RestController extends React.Component {
   	<input name="lastName" value={this.state.author.lastName} onChange={this.handleChangeLastName}></input>
 	</label>	 
 
-	<input type="submit" value="Submit" />			
+	<input type="submit" value={this.state.isButtonLabelSubmit ? "Submit" : "Update"} />			
 
   </form>
 
