@@ -150,7 +150,6 @@ class RestController extends React.Component {
 			}
 		})
 		.catch(err => err)
-
 		}
 
 	}
